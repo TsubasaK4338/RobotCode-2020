@@ -75,17 +75,96 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    
+    //この関数はずっとループして呼ばれるので、ループの最初にモード確認するお！
+    
+    //根本的な制御モードの区別、そして入力確認
+    switch(state.controlState) {
+      
+      //--------------------------------------------------------------------------------
+      
+      //【ドライブモード】
+      case m_Drive:
+        
+        //OperatorのLBボタンが押されたら、セル発射モードへ切り替え
+        if(operator.getBumper(Hand.kLeft)){
+          state.controlState = State.ControlState.m_Firingball;
+          break;
+        }
+        
+        //OperatorのBackボタンが押されたら、パネル回転モードへ切り替え
+        if(operator.getBackButton()){
+          state.controlState = State.ControlState.m_Panelrotation;
+          break;
+        }  
 
-    
-    
+        //driverのstartボタンがおされたら、ぶら下がりモードへ切り替え
+        if(driver.getStartButtonPressed()){
+          state.controlState = State.ControlState.m_Hanging;
+          break;
+        }
     
         /********** Drive ***********/
           state.driveState = State.DriveState.kManual;
           state.driveStraightSpeed = Util.deadbandProcessing(driver.getY(Hand.kLeft));
           state.driveRotateSpeed = Util.deadbandProcessing(driver.getX(Hand.kRight));
 
-          drive.apllyState(state);
+        
+       //ここはてらゆうにまかせようじゃあないか！！
+        break;
+      
+     //---------------------------------------------------------------------------------
+    
+     //【セル発射モード】
+     case m_Firingball:
+
+        //OperatorのLBボタンが離されたら、ドライブモードへ切り替え
+        if(operator.getBumperReleased(Hand.kLeft)){
+          state.controlState = State.ControlState.m_Drive;
+          break;
         }
+
+          //ここはぼくががんばる
+        break;
+
+     //---------------------------------------------------------------------------------
+      
+     //【コンパネぐるぐるモード】
+     case m_Panelrotation:
+
+        //OperatorのBackボタンが離されたら、ドライブモードへ切り替え
+        if(operator.getBackButtonReleased()){
+          state.controlState = State.ControlState.m_Drive;
+          break;
+        }
+
+          //ここをしゅｎｙに任せようじゃあないか！！
+
+        break;
+
+     //---------------------------------------------------------------------------------
+      
+     //【ぶら下がりモード】
+     case m_Hanging:
+
+        //driverのBackボタンがおされたら、ドライブモードへ切り替え
+        if(driver.getBackButtonPressed()){
+          state.controlState = State.ControlState.m_Drive;
+          break;
+        }
+
+          //ここは設計完了して細かい仕様が分かり次第検討…たぶん女王ががんばるのか？
+
+        break;
+    }
+    //---------------------------------------------------------------------------------
+    
+    //入力確認が終わったら最後にStateを確認（apply）しよう
+
+   　drive.apllyState(state);
+    
+    
+  }
 
   @Override
   public void testPeriodic() {
