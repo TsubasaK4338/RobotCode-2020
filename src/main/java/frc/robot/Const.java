@@ -8,17 +8,44 @@ public class Const {
     public static final int OperateControllerPort = 1;
 
 
-
-//Drive
-
-    //Drive-mortor-port
+　　
+	//マイコンポート宣言（ロボリオ）
+        
+        //Drive-motor-port
 	public static final int DriveRightFrontPort = 0;
 	public static final int DriveRightBackPort = 5;
-	public static final int DriveLeftFrontPort = 1;
-    public static final int DriveLeftBackPort = 6;
+        public static final int DriveLeftFrontPort = 1;
+        public static final int DriveLeftBackPort = 6;
 
-    //Drive
-    public static final double DriveFullSpeedTime = 0.5;
+        //Arm-Motor-port & Encoder
+        public static final int CanonMotorPort = 0;
+        public static final int CanonEncoderPort_A = 0;
+        public static final int CanonEncoderPort_B = 0;
+
+        public static final int ShootMotorRightPort = 0;
+        public static final int ShootMotorLeftPort  = 0;
+        public static final int ShootEncoderRightPort_A = 0;
+        public static final int ShootEncoderRightPort_B = 0;
+        public static final int ShootEncoderLeftPort_A  = 0;
+        public static final int ShootEncoderLeftPort_B  = 0;
+
+        public static final int IntakeMotorPort = 0;
+        
+        public static final int BeltMotorFrontPort = 0;
+        public static final int BeltMotorBackPort  = 0;
+
+        public static final int HangingMotorPort = 0;
+        public static final int HangingEncoderPort_A = 0;
+        public static final int HangingEncoderPort_B = 0;
+
+	
+	//台形加速時間宣言
+        //drive
+        public static final double DriveFullSpeedTime = 0.5;
+
+        //Arm
+        public static final double CanonFullSpeedTime = 0.3;
+
 
     //Seosor
 
