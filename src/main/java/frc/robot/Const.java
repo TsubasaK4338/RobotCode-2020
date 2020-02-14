@@ -38,18 +38,37 @@ public class Const {
         public static final int HangingEncoderPort_A = 0;
         public static final int HangingEncoderPort_B = 0;
 
-	
-	//台形加速時間宣言
+	//microSwitch-port
+        public static final int MaxUpSwitchPort   = 0;
+        public static final int MaxDownSwitchPort = 0;
+
+
+
+    
+    //定速で回したい時の速度宣言
+        public static final double CanonBasicSpeed_P = 0.4; 
+        public static final double CanonBasicSpeed_M = -0.4;
+
+
+    //PIDのゲイン宣言
+        //砲台のモーターのゲイン宣言
+        public static final double CanonKp = 0;
+	    public static final double CanonKi = 0;
+        public static final double CanonKd = 0;
+
+        //発射モーターのゲイン宣言
+        public static final double ShootKp = 0;
+	    public static final double ShootKi = 0;
+        public static final double ShootKd = 0;
+
+    //台形加速時間宣言
         //drive
         public static final double DriveFullSpeedTime = 0.5;
 
         //Arm
         public static final double CanonFullSpeedTime = 0.3;
 
+    //不感帯宣言
+        public static final double Deadband = 0.2;
 
-    //Seosor
-
-
-    //その他
-    public static final double Deadband = 0.2;
 }
