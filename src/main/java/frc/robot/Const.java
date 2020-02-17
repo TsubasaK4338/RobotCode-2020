@@ -53,4 +53,5 @@ public class Const {
 
     //その他
     public static final double Deadband = 0.2;
+    // 
 }

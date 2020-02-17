@@ -255,7 +255,7 @@ public class Robot extends TimedRobot {
     //---------------------------------------------------------------------------------
 
     //入力確認が終わったら最後にStateを確認（apply）しよう
-
+// 
     drive.apllyState(state);
     climb.apllyState(state);
 

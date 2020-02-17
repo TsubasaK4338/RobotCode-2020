@@ -40,7 +40,7 @@ public class State {
     public double canonMotorSpeed;
     public double hangingServoAngle;
     public double climbSlideMotorSpeed;
-
+// 
 
     State(){
         stateInit();
