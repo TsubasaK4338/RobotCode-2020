@@ -19,11 +19,12 @@ public class State {
     }
 
     public enum ClimbState{
-        DoNothing,
+        doNothing,
         climbExtend,
         climbShrink,
         climbLock,
-        climbSlide
+        climbRightSlide,
+        climbLeftSlide,
     }
 
     //State宣言
@@ -34,6 +35,12 @@ public class State {
     public double driveStraightSpeed, driveRotateSpeed;  //Driveの速度
     public double driveStraightSetpoint, driveRotateSetpoint;    // PID制御の目標値
     public boolean is_drivePIDOn;    // PID制御するかどうか
+
+    public double hangingMotorSpeed;
+    public double canonMotorSpeed;
+    public double hangingServoAngle;
+    public double climbSlideMotorSpeed;
+
 
     State(){
         stateInit();
@@ -50,6 +57,13 @@ public class State {
         driveRotateSpeed = 0;
         is_drivePIDOn = false;
 
+        // Climb
+        hangingMotorSpeed = 0;
+        canonMotorSpeed = 0;
+        hangingServoAngle = 0;
+        climbSlideMotorSpeed = 0;
+
+        
     }
 
 }

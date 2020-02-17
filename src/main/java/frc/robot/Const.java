@@ -10,8 +10,8 @@ public class Const {
 	//マイコンポート宣言（ロボリオ）
         
         //Drive-motor-port
-	public static final int DriveRightFrontPort = 0;
-	public static final int DriveRightBackPort = 5;
+	    public static final int DriveRightFrontPort = 0;
+	    public static final int DriveRightBackPort = 5;
         public static final int DriveLeftFrontPort = 1;
         public static final int DriveLeftBackPort = 6;
 
@@ -36,7 +36,8 @@ public class Const {
         public static final int HangingEncoderPort_A = 0;
         public static final int HangingEncoderPort_B = 0;
 
-	    public static final int lockservoMotorPort = 0;
+        public static final int climbservoMotorPort = 0;
+        public static final int climbSlidePort = 0;
 
 	
 	//台形加速時間宣言

@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import frc.robot.State.ClimbState;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
@@ -44,10 +45,11 @@ public class Robot extends TimedRobot {
     //アーム内部のベルトモーター
     VictorSPX BeltMotorFront , BeltMotorback;
 
-    //ぶら下がり用のモーター&エンコーダー
-    WPI_TalonSRX HangingMotor;
-    Encoder HangingEncoder;
-    Servo lockservo;
+    //クライム用のモーター&エンコーダー&サーボ
+    WPI_TalonSRX hangingMotor;
+    Encoder hangingEncoder;
+    Servo hangingServo;
+    WPI_TalonSRX climbSlideMotor;
   
 
     //センサー
@@ -55,6 +57,7 @@ public class Robot extends TimedRobot {
 
     //SubClass
     Drive drive;
+    Climb climb;
     State state;
 
   @Override
@@ -103,16 +106,17 @@ public class Robot extends TimedRobot {
       BeltMotorback  = new VictorSPX(Const.BeltMotorBackPort);
 
       //ぶら下がり用モーター＆エンコーダーの初期化
-      HangingMotor = new WPI_TalonSRX(Const.HangingMotorPort);
-      HangingEncoder = new Encoder(Const.HangingEncoderPort_A , Const.HangingEncoderPort_B);
-      lockservo = new Servo(Const.lockservoMotorPort);
+      hangingMotor = new WPI_TalonSRX(Const.HangingMotorPort);
+      hangingEncoder = new Encoder(Const.HangingEncoderPort_A , Const.HangingEncoderPort_B);
+      hangingServo = new Servo(Const.climbservoMotorPort);
+      climbSlideMotor = new WPI_TalonSRX(Const.climbSlidePort);
+
 
     //----------------------------------------------------------------
 
-
     drive = new Drive(driveLeftFront, driveRightFront, gyro);
+    climb = new Climb(hangingMotor, CanonMotor, hangingServo, climbSlideMotor);
     state = new State();
-
   }
 
   @Override
@@ -201,6 +205,8 @@ public class Robot extends TimedRobot {
 
         // ワイヤー伸ばす
         if(driver.getYButton()) {
+          
+          state.climbState = ClimbState.climbExtend;
 
           break;
         }
@@ -208,11 +214,15 @@ public class Robot extends TimedRobot {
         // ワイヤー巻く
         if(driver.getBButton()) {
 
+          state.climbState = ClimbState.climbShrink;
+
           break;
         }
 
         // ワイヤーの爪初期化
         if(driver.getBackButton()) {
+
+          state.climbState = ClimbState.climbLock;
 
           break;
         }
@@ -220,21 +230,26 @@ public class Robot extends TimedRobot {
         // 登った後、左右に動く
         if(driver.getBumper(Hand.kRight)) {
 
-        } else if(driver.getBumper(Hand.kLeft)) {
+          state.climbState = ClimbState.climbRightSlide;
 
-        } else {
+          break;
+        } 
+        else if(driver.getBumper(Hand.kLeft)) {
+
+          state.climbState = ClimbState.climbLeftSlide;
 
           break;
         }
-
 
         //driverのBackボタンがおされたら、ドライブモードへ切り替え
-        if(driver.getBackButtonPressed()){
+        if(driver.getBackButtonPressed()) {
+
           state.controlState = State.ControlState.m_Drive;
           break;
+
         }
 
-        break;
+      break;
 
     }
     //---------------------------------------------------------------------------------
@@ -242,6 +257,8 @@ public class Robot extends TimedRobot {
     //入力確認が終わったら最後にStateを確認（apply）しよう
 
     drive.apllyState(state);
+    climb.apllyState(state);
+
   }
 
   @Override
