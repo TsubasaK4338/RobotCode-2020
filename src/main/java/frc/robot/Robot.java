@@ -14,6 +14,7 @@ import frc.robot.State.ClimbState;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.Timer;
 
 //TalonSRX&VictorSPXのライブラリー
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -50,8 +51,10 @@ public class Robot extends TimedRobot {
     Encoder hangingEncoder;
     Servo hangingServo;
     WPI_TalonSRX climbSlideMotor;
-  
 
+    // タイマー
+    Timer climbTimer;
+  
     //センサー
     ADXRS450_Gyro gyro;
 
@@ -111,11 +114,13 @@ public class Robot extends TimedRobot {
       hangingServo = new Servo(Const.climbservoMotorPort);
       climbSlideMotor = new WPI_TalonSRX(Const.climbSlidePort);
 
+      climbTimer = new Timer();
+
 
     //----------------------------------------------------------------
 
     drive = new Drive(driveLeftFront, driveRightFront, gyro);
-    climb = new Climb(hangingMotor, CanonMotor, hangingServo, climbSlideMotor);
+    climb = new Climb(hangingMotor, CanonMotor, hangingServo, climbSlideMotor, climbTimer);
     state = new State();
   }
 
