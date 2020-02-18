@@ -15,7 +15,7 @@ public class Climb {
     Servo Servo;
     WPI_TalonSRX SlideMotor;
 
-    
+    // クライム
     Climb(WPI_TalonSRX hangingMotor, WPI_TalonSRX canonMotor, Servo hangingServo, WPI_TalonSRX climbSlideMotor) {
         this.ClimbMotor = hangingMotor;
         this.CanonMotor = canonMotor;
