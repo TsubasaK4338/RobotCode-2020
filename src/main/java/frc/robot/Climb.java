@@ -4,6 +4,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Servo;
 import frc.robot.State.ControlState;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DigitalInput;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 
@@ -14,16 +15,21 @@ public class Climb {
     private WPI_TalonSRX CanonMotor;
     private Servo Servo;
     private WPI_TalonSRX SlideMotor;
+    private DigitalInput MaxUp;         //角度上限
+    private DigitalInput MaxDown; 
 
     private Timer lockTimer;
 
-    Climb(WPI_TalonSRX hangingMotor, WPI_TalonSRX canonMotor, Servo hangingServo, WPI_TalonSRX climbSlideMotor, Timer climbTimer) {
+    Climb(WPI_TalonSRX hangingMotor, WPI_TalonSRX canonMotor, Servo hangingServo, WPI_TalonSRX climbSlideMotor, Timer climbTimer, DigitalInput maxUp, DigitalInput maxDown) {
         this.ClimbMotor = hangingMotor;
         this.CanonMotor = canonMotor;
         this.Servo = hangingServo;
         this.SlideMotor = climbSlideMotor;
         this.lockTimer = climbTimer;
+        this.MaxUp = maxUp;
+        this.MaxDown = maxDown;
     }
+
 
     // クライムを伸ばす
     private void climbAdvanced(){
@@ -60,9 +66,14 @@ public class Climb {
         SlideMotor.set(-0.30);        
 
     }
+
+
+    // private void climbCheck (State state) {
+        
+    // }
     
     public void apllyState(State state){
-        
+
         if(state.controlState == ControlState.m_Hanging){
             ClimbSequence(state);
 
@@ -122,11 +133,8 @@ public class Climb {
 
             break;
 
-
         }
-
 
     }
 
-    // 
 }

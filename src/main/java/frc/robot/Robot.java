@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 //TalonSRX&VictorSPXのライブラリー
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -46,6 +47,10 @@ public class Robot extends TimedRobot {
     //アーム内部のベルトモーター
     VictorSPX BeltMotorFront , BeltMotorback;
 
+    //マイクロスイッチ(砲台の角度上限＆下限)
+    DigitalInput MaxUpSwitch;
+    DigitalInput MaxDownSwitch;
+
     //クライム用のモーター&エンコーダー&サーボ
     WPI_TalonSRX hangingMotor;
     Encoder hangingEncoder;
@@ -61,6 +66,7 @@ public class Robot extends TimedRobot {
     //SubClass
     Drive drive;
     Climb climb;
+    Canon canon;
     State state;
 
   @Override
@@ -119,8 +125,14 @@ public class Robot extends TimedRobot {
 
     //----------------------------------------------------------------
 
+    //マイクロスイッチの初期化
+    MaxUpSwitch   = new DigitalInput(Const.MaxUpSwitchPort);
+    MaxDownSwitch = new DigitalInput(Const.MaxDownSwitchPort);
+
+
     drive = new Drive(driveLeftFront, driveRightFront, gyro);
-    climb = new Climb(hangingMotor, CanonMotor, hangingServo, climbSlideMotor, climbTimer);
+    climb = new Climb(hangingMotor, CanonMotor, hangingServo, climbSlideMotor, climbTimer, MaxUpSwitch, MaxDownSwitch);
+    canon = new Canon(CanonMotor, MaxUpSwitch, MaxDownSwitch);
     state = new State();
   }
 
@@ -184,6 +196,11 @@ public class Robot extends TimedRobot {
           state.controlState = State.ControlState.m_Drive;
           break;
         }
+
+
+        /********** CanonRotate ***********/
+        state.CanonRotateSpeed = Util.deadbandProcessing(operator.getY(Hand.kLeft));
+
 
           //ここはぼくががんばる
         break;
@@ -260,7 +277,7 @@ public class Robot extends TimedRobot {
     //---------------------------------------------------------------------------------
 
     //入力確認が終わったら最後にStateを確認（apply）しよう
-// 
+
     drive.apllyState(state);
     climb.apllyState(state);
 

@@ -24,12 +24,27 @@ public class State {
         climbShrink,
         climbLock,
         climbRightSlide,
-        climbLeftSlide,
+        climbLeftSlide
     }
+
+    //Canonの状態を確認
+    public enum CanonState{
+        k_Basic,           //基本状態（最も下を向いている）
+        k_Parallel,        //地面と平行な状態
+        k_Aaiming,         //砲台の照準を合わせている状態
+        k_Maxup            //最も上を向いている状態
+    }
+
+    // public enum ClimbAngle {
+    //     climbNormal,
+    //     climbMaxUp,
+    //     climbFreeMove,
+    // }
 
     //State宣言
     public ControlState  controlState;
     public DriveState driveState;
+    public CanonState canonState;
     public ClimbState climbState;
 
     public double driveStraightSpeed, driveRotateSpeed;  //Driveの速度
@@ -40,6 +55,14 @@ public class State {
     public double canonMotorSpeed;
     public double hangingServoAngle;
     public double climbSlideMotorSpeed;
+
+    public double CanonRotateSpeed;  //砲台の回る速度
+    public double CanonRotateSetPoint;  // PID制御の目標値
+    public boolean is_canonPIDOn;  // PID制御しているかどうか
+
+    //入力の認識変数宣言
+    public boolean is_CanonChangeBasic; //砲台の角度初期化するかどうか
+
 // 
 
     State(){
@@ -63,7 +86,11 @@ public class State {
         hangingServoAngle = 0;
         climbSlideMotorSpeed = 0;
 
-        
+        //ArmのStateを初期化
+        canonState = CanonState.k_Basic;
+        CanonRotateSpeed = 0;
+        CanonRotateSetPoint = 0;
+        is_canonPIDOn = false;
     }
 
 }
