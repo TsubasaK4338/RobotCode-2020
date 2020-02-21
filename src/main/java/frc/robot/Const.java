@@ -70,7 +70,19 @@ public class Const {
     //Seosor
 
 
+    //climb
+        public static final double climbMotorAdvanceSpeed = 0.30;
+        public static final double canonMotorAdvanceSpeed = 0.15;
+        public static final double climbMotorShrinkSpeed = -0.30;
+        public static final double canonMotorShrinkSpeed = -0.15;
+        public static final double unLockAngle = 30;
+        public static final double lockAngle = 0;
+        public static final double slideMotorRight = 0.30;
+        public static final double slideMotorLeft = -0.30;
+
+
+
     //その他
-    public static final double Deadband = 0.2;
+        public static final double Deadband = 0.2;
     // 
 }

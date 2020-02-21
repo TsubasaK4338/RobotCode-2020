@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Servo;
 import frc.robot.State.ControlState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DigitalInput;
+
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 
@@ -31,39 +32,65 @@ public class Climb {
     }
 
 
+    //砲台のモーターを回す(速さはsetspeedで決める)
+
+    private void ClimbMove() {
+
+        if (MaxDown.get()) {
+            ClimbMotor.set(Const.climbMotorAdvanceSpeed);
+            CanonMotor.set(Const.canonMotorAdvanceSpeed);
+        } 
+        else if  (MaxUp.get()) {
+            ClimbMotor.set(Const.climbMotorShrinkSpeed);
+            CanonMotor.set(Const.canonMotorShrinkSpeed);
+        }
+
+    }
+
     // クライムを伸ばす
     private void climbAdvanced(){
-        ClimbMotor.set(0.30);
-        CanonMotor.set(0.15);
+
+        ClimbMotor.set(Const.climbMotorAdvanceSpeed);
+        CanonMotor.set(Const.climbMotorAdvanceSpeed);
+        ClimbMove();
+        // CanonMotor.set(0.15);
+
     }
 
     // クライムを縮める
     private void climbShrinked(){
-        ClimbMotor.set(-0.30);
-        CanonMotor.set(-0.15);
+
+        ClimbMotor.set(Const.climbMotorShrinkSpeed);
+        CanonMotor.set(Const.canonMotorShrinkSpeed);
+        ClimbMove();
+
     }
 
     // クライムをアンロックする
     private void unlockServo(){
-        Servo.setAngle(30);
+
+        Servo.setAngle(Const.unLockAngle);
+
     }
 
     // クライムをロックする
     private void lockServo(){
-        Servo.setAngle(0);
+
+        Servo.setAngle(Const.lockAngle);
+
     }
 
     // ジェネレーター上で右に動く
     private void rightSlide() {
 
-        SlideMotor.set(0.30);
+        SlideMotor.set(Const.slideMotorRight);
 
     }
 
     // ジェネレーター上で左に動く
     private void leftSlide() {
 
-        SlideMotor.set(-0.30);        
+        SlideMotor.set(Const.slideMotorLeft);        
 
     }
 
@@ -91,49 +118,52 @@ public class Climb {
 
             case climbExtend:
 
-            unlockServo();
+                unlockServo();
 
-            climbAdvanced();
+                climbAdvanced();
 
             break;
 
             case climbShrink:
 
-            unlockServo();
+                unlockServo();
             
-            lockTimer.reset();
-            lockTimer.start();
+                lockTimer.reset();
+                lockTimer.start();
 
-            if(lockTimer.get() > 0.3) {
+                if(lockTimer.get() > 0.3) {
+
+                    climbShrinked();
+
+                }
 
                 climbShrinked();
 
-            }
-            
-
-            climbShrinked();
-
-            break;
+                break;
 
             case climbLock:
 
-            lockServo();
+                lockServo();
 
             break;
 
             case climbRightSlide:
 
-            rightSlide();
+                lockServo();
+                rightSlide();
 
             break;
 
             case climbLeftSlide:
 
-            leftSlide();
+                lockServo();
+                leftSlide();
 
             break;
 
         }
+
+        
 
     }
 
