@@ -39,7 +39,26 @@ public class Const {
         public static final int climbservoMotorPort = 0;
         public static final int climbSlidePort = 0;
 
-	
+    
+        
+    //定速で回したい時の速度宣言
+        public static final double CanonBasicSpeed_P = 0.4; 
+        public static final double CanonBasicSpeed_M = -0.4;
+
+
+    //microSwitch-port
+        public static final int MaxUpSwitchPort   = 0;
+        public static final int MaxDownSwitchPort = 0;
+
+    
+        
+    //PIDのゲイン宣言
+    //砲台のモーターのゲイン宣言
+        public static final double CanonKp = 0;
+	    public static final double CanonKi = 0;
+        public static final double CanonKd = 0;
+
+
 	//台形加速時間宣言
         //drive
         public static final double DriveFullSpeedTime = 0.5;
