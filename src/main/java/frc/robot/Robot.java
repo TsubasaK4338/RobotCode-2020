@@ -22,7 +22,7 @@ public class Robot extends TimedRobot {
   //とりあえず、Xbox2つ
   XboxController driver, operator;
 
-  //モーター(全11個)
+  //モーター
     
     //DriveMotor
     WPI_TalonSRX  driveRightFront,driveLeftFront;
@@ -53,6 +53,8 @@ public class Robot extends TimedRobot {
   //SubClass
   Drive drive;
   State state;
+
+  // 
 
   @Override
   public void robotInit() {
