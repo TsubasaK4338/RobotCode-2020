@@ -10,6 +10,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.State.PanelState;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 //TalonSRX&VictorSPXのライブラリー
@@ -22,7 +25,7 @@ public class Robot extends TimedRobot {
   //とりあえず、Xbox2つ
   XboxController driver, operator;
 
-  //モーター
+  //モーター(全11個)
     
     //DriveMotor
     WPI_TalonSRX  driveRightFront,driveLeftFront;
@@ -53,15 +56,15 @@ public class Robot extends TimedRobot {
   //SubClass
   Drive drive;
   State state;
-
-  // 
+  Panel panel;
 
   @Override
   public void robotInit() {
 
+
     //コントローラーの初期化
-    driver = new XboxController(Const.DriveControllerPort);
-    operator = new XboxController(Const.OperateControllerPort);
+    driver = new XboxController(Const.driverControllerPort);
+    operator = new XboxController(Const.operatorControllerPort);
 
     //gyroの初期化
     gyro = new ADXRS450_Gyro();
@@ -84,15 +87,12 @@ public class Robot extends TimedRobot {
     
       //アームの角度変更モーター&エンコーダーの初期化
       CanonMotor = new WPI_TalonSRX(Const.CanonMotorPort);
-      CanonEncoder = new Encoder(Const.CanonEncoderPort_A , Const.CanonEncoderPort_B);
       //アームの角度変更の台形加速設定
       CanonMotor.configOpenloopRamp(Const.CanonFullSpeedTime);
 
       //発射部分のモーター＆エンコーダーの初期化
       ShootMotorLeft  = new WPI_TalonSRX(Const.ShootMotorLeftPort);
       ShootMotorRight = new WPI_TalonSRX(Const.ShootMotorRightPort);
-      ShootEncoderLeft  = new Encoder(Const.ShootEncoderLeftPort_A , Const.ShootEncoderLeftPort_B);
-      ShootEncoderRight = new Encoder(Const.ShootEncoderRightPort_A , Const.ShootEncoderRightPort_B);
 
       //インテイクモーターの初期化
       IntakeMotor = new VictorSPX(Const.IntakeMotorPort);
@@ -103,12 +103,12 @@ public class Robot extends TimedRobot {
 
       //ぶら下がり用モーター＆エンコーダーの初期化
       HangingMotor = new WPI_TalonSRX(Const.HangingMotorPort);
-      HangingEncoder = new Encoder(Const.HangingEncoderPort_A , Const.HangingEncoderPort_B);
 
     //----------------------------------------------------------------
 
 
     drive = new Drive(driveLeftFront, driveRightFront, gyro);
+    panel = new Panel(ShootMotorLeft, ShootMotorRight);
     state = new State();
 
   }
@@ -183,16 +183,25 @@ public class Robot extends TimedRobot {
       
      //【コンパネぐるぐるモード】
      case m_Panelrotation:
-
-        //OperatorのBackボタンが離されたら、ドライブモードへ切り替え
-        if(operator.getBackButtonReleased()){
-          state.controlState = State.ControlState.m_Drive;
-          break;
-        }
-
-          //ここをしゅｎｙに任せようじゃあないか！！
-
+     
+     //OperatorのBackボタンが離されたら、ドライブモードへ切り替え
+      if(operator.getBackButtonReleased()){
+        state.controlState = State.ControlState.m_Drive;
         break;
+      }
+      //syuny here rollin
+
+      if((Util.deadbandProcessing(operator.getTriggerAxis(Hand.kLeft)) - 
+      Util.deadbandProcessing(operator.getTriggerAxis(Hand.kRight)) > 0){
+        state.panelState = State.PanelState.p_ManualRot;
+      }
+      else if (operator.getXButton()||operator.getYButton()||operator.getAButton()||operator.getBButton()){
+        state.panelState = State.PanelState.p_AlignTo;
+      }
+      
+
+      }
+      
 
      //---------------------------------------------------------------------------------
       
@@ -213,12 +222,21 @@ public class Robot extends TimedRobot {
     
     //入力確認が終わったら最後にStateを確認（apply）しよう
 
-   　drive.apllyState(state);
+    drive.apllyState(state);
+    canon.applyState(state);
+    shooter.applyState(state);
+    panel.applyState(state);
+
     
     
   }
 
   @Override
   public void testPeriodic() {
+  }
+
+  @Override
+  public void disabledInit() {
+
   }
 }
