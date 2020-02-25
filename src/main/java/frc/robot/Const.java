@@ -5,7 +5,7 @@ public final class Const {
 
     //コントローラーのポート宣言（PC）
         public static final int driverControllerPort = 0;
-        public static final int operatoeControllerPort = 1;
+        public static final int operatorControllerPort = 1;
         //public static final int joystickControllerPort = 2;
 
 

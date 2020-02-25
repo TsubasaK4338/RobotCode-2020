@@ -1,20 +1,12 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj.Encoder;
-
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-
 import com.revrobotics.ColorSensorV3;
+
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.util.Color;
+import frc.robot.State.ControlState;
 
 public class Panel{
 
@@ -33,33 +25,45 @@ public class Panel{
         this.operator = operator;
     }
 
-  //!
-  switch (State.PanelState) {
-    case p_ManualRot:
-      MotorLeft.set(Util.deadbandProcessing(operator.getTriggerAxis(kLeft)-operator.getTriggerAxis(kRight)));
-      MotorRight.set(Util.deadbandProcessing(operator.getTriggerAxis(kLeft)-operator.getTriggerAxis(kRight)));
+
+    public void applyState(State state){
+
+    //なんかif
+    if(state.controlState == ControlState.m_Panelrotation){
+      
+      switch (state.panelState) {
+      
+      case p_ManualRot:
+        MotorLeft.set(state.panelManualSpeed);
+        MotorRight.set(state.panelManualSpeed);
       break;
 
-    case p_AlignTo:
-    if(operator.getXButton()){
-      AlignPanelTo(ColorCode.red);
-    }
-    if(operator.getYButton()){
-      AlignPanelTo(ColorCode.green);
-    }
-    if(operator.getBButton()){
-      AlignPanelTo(ColorCode.blue);
-    }
-    if(operator.getAButton()){
-      AlignPanelTo(ColorCode.yellow);
-    }
-        
-      }
+      //色合わせ　青<->赤、黄<->緑
+      case p_toBlue:
+        AlignPanelTo(ColorCode.red);
       break;
 
-    case p_silent:
-      MotorLeft.set(0);
-      MotorRight.set(0);
+      case p_toYellow:
+        AlignPanelTo(ColorCode.green);
+      break;
+
+      case p_toRed:
+        AlignPanelTo(ColorCode.blue);
+      break;
+
+      case p_toGreen:
+        AlignPanelTo(ColorCode.yellow);
+      break;
+
+      case p_DoNothing:
+        MotorLeft.set(0);
+        MotorRight.set(0);
+      break;
+
+    }
+
+  }
+
   }
   //
   public enum ColorCode {
@@ -69,10 +73,11 @@ public class Panel{
     blue,
     inRange,
     outOfRange
-  };
+  }
+
   ColorCode colorOutput = ColorCode.inRange;
 
-  //!
+  //DetectedColor(ロボット側のカラーセンサーの目標値　青<->赤、黄<->緑)　で呼び出す
   private ColorCode DetectedColor() {
     int p = m_colorSensor.getProximity();
     Color detectedColor = m_colorSensor.getColor();
@@ -97,14 +102,14 @@ public class Panel{
     return ColorCode.inRange;
   }
 
-  private void AlignPanelTo(Color c){
+  private void AlignPanelTo(ColorCode c){
 
     if(DetectedColor()==c){
       MotorLeft.set(0);
       MotorRight.set(0);
     } else {
-      MotorLeft.set(0.3);
-      MotorRight.set(0.3);
+      MotorLeft.set(Const.ShooterPanelSpeed);
+      MotorRight.set(Const.ShooterPanelSpeed);
     }
     
   }

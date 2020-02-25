@@ -59,9 +59,13 @@ public class State {
 
         //Panel
         public enum PanelState{
-            p_Silent,          //stop
-            p_ManualRot,       //手動
-            p_Align            //色合わせ
+            p_DoNothing,        //stop
+            p_ManualRot,        //手動
+            p_toBlue,           //色合わせ(大会のパネル側のセンサーの色なのでカラーセンサーが読み取るのは二つずれた値。青<->赤、黄<->緑）
+            p_toYellow,
+            p_toRed,
+            p_toGreen
+
         }
 
 
@@ -73,6 +77,7 @@ public class State {
     public CanonOutState canonOutState;
     public ShooterState shooterState;
     public IntakeState  intakeState;
+    public PanelState panelState;
 
 
     //MotorのSpeed＆PID宣言
@@ -83,6 +88,11 @@ public class State {
     public double CanonRotateSpeed;  //砲台の回る速度
     public double CanonRotateSetPoint;  // PID制御の目標値
     public boolean is_canonPIDOn;  // PID制御しているかどうか
+
+    
+    public double panelManualSpeed;    //パネル回す速度（手動）
+
+
 
     //入力の認識変数宣言
     //public boolean is_CanonChangeBasic; //砲台の角度初期化するかどうか
@@ -115,11 +125,16 @@ public class State {
         CanonRotateSetPoint = 0;
         is_canonPIDOn = false;
 
+        panelManualSpeed = 0;
+
         //shooterState初期化
         shooterState = ShooterState.s_Intake;
 
         //IntakeState初期化
         intakeState  = IntakeState.i_Intake;
+
+        //panelstate初期化
+        panelState   = PanelState.p_DoNothing;
 
         //入力の認識変数の初期化
         //is_CanonChangeBasic = false;

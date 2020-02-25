@@ -7,17 +7,15 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.State.PanelState;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 //TalonSRX&VictorSPXのライブラリー
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 
 public class Robot extends TimedRobot {
 
@@ -106,9 +104,9 @@ public class Robot extends TimedRobot {
 
     //----------------------------------------------------------------
 
-
+    //コンストラクター
     drive = new Drive(driveLeftFront, driveRightFront, gyro);
-    panel = new Panel(ShootMotorLeft, ShootMotorRight);
+    panel = new Panel(ShootMotorLeft, ShootMotorRight, operator);
     state = new State();
 
   }
@@ -190,46 +188,58 @@ public class Robot extends TimedRobot {
         break;
       }
       //syuny here rollin
-
+      //手動（最優先）
       if((Util.deadbandProcessing(operator.getTriggerAxis(Hand.kLeft)) - 
-      Util.deadbandProcessing(operator.getTriggerAxis(Hand.kRight)) > 0){
+          Util.deadbandProcessing(operator.getTriggerAxis(Hand.kRight))) > 0){
+        
+        state.panelManualSpeed = 
+        (Util.deadbandProcessing(operator.getTriggerAxis(Hand.kLeft)) - 
+        Util.deadbandProcessing(operator.getTriggerAxis(Hand.kRight)));
+        
         state.panelState = State.PanelState.p_ManualRot;
       }
-      else if (operator.getXButton()||operator.getYButton()||operator.getAButton()||operator.getBButton()){
-        state.panelState = State.PanelState.p_AlignTo;
+      //色合わせ（青優先になるけどそれはまあ）
+      else if (operator.getXButton()){
+        state.panelState = State.PanelState.p_toBlue;
       }
-      
-
+      else if (operator.getYButton()){
+        state.panelState = State.PanelState.p_toYellow;
       }
-      
+      else if (operator.getBButton()){
+        state.panelState = State.PanelState.p_toRed;
+      }
+      else if (operator.getAButton()){
+        state.panelState = State.PanelState.p_toGreen;
+      }
+      //何もしないやつ
+      else{
+        state.panelState = State.PanelState.p_DoNothing;
+      }
+      break;
 
-     //---------------------------------------------------------------------------------
-      
-     //【ぶら下がりモード】
-     case m_Hanging:
-
-        //driverのBackボタンがおされたら、ドライブモードへ切り替え
-        if(driver.getBackButtonPressed()){
-          state.controlState = State.ControlState.m_Drive;
-          break;
-        }
-
-          //ぶら下がりの仕様がよくわからん…てらゆう、お前知ってるんだって？じゃぁお前担当な！（もしくは女王）
-
-        break;
-    }
     //---------------------------------------------------------------------------------
     
-    //入力確認が終わったら最後にStateを確認（apply）しよう
+   //【ぶら下がりモード】
+    case m_Hanging:
 
-    drive.apllyState(state);
-    canon.applyState(state);
-    shooter.applyState(state);
+      //driverのBackボタンがおされたら、ドライブモードへ切り替え
+      if(driver.getBackButtonPressed()){
+        state.controlState = State.ControlState.m_Drive;
+        break;
+      }
+
+        //ぶら下がりの仕様がよくわからん…てらゆう、お前知ってるんだって？じゃぁお前担当な！（もしくは女王）
+      break;
+
+    }
+  //---------------------------------------------------------------------------------
+    
+    //入力確認が終わったら最後にStateを確認（apply）しよう 
+    drive.applyState(state);
     panel.applyState(state);
 
-    
-    
   }
+
 
   @Override
   public void testPeriodic() {
