@@ -111,6 +111,7 @@ public class Robot extends TimedRobot {
         shooterRightMotor.configFactoryDefault();
         shooterLeftMotor.configFactoryDefault();
 
+        //----------------------------------------------------------
         //シューターのPIDの設定
         shooterLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,
                 Const.kPIDLoopIdx,
@@ -133,7 +134,30 @@ public class Robot extends TimedRobot {
 
         shooterRightMotor.setSensorPhase(true);
         shooterLeftMotor.setSensorPhase(true);
+        //----------------------------------------------------------
+        
+        //砲台のPIDの設定
+        armMotor.configFactoryDefault();
+        //s_TalonLeft.configOpenloopRamp(0.1);
+        armMotor.configSelectedFeedbackSensor(FeedbackDevice.Analog, 
+                                             Const.kPIDLoopIdx, Const.kTimeoutMs);
+    
+        armMotor.setSensorPhase(true);
+        armMotor.setInverted(true);
+    
+        armMotor.configNominalOutputForward(0,Const.kTimeoutMs);
+        armMotor.configNominalOutputReverse(0,Const.kTimeoutMs);
+        armMotor.configPeakOutputForward(1.0,Const.kTimeoutMs);
+        armMotor.configPeakOutputReverse(-1.0,Const.kTimeoutMs);
+    
+        armMotor.config_kF(Const.kPIDLoopIdx, Const.kGains_ArmPosition.kF, Const.kTimeoutMs);
+        armMotor.config_kP(Const.kPIDLoopIdx, Const.kGains_ArmPosition.kP, Const.kTimeoutMs);
+        armMotor.config_kI(Const.kPIDLoopIdx, Const.kGains_ArmPosition.kI, Const.kTimeoutMs);
+        armMotor.config_kD(Const.kPIDLoopIdx, Const.kGains_ArmPosition.kD, Const.kTimeoutMs);
+    
+        armMotor.configMaxIntegralAccumulator(Const.kPIDLoopIdx, Const.kGains_ArmPosition.MaxIntegralAccumulator);
 
+        //----------------------------------------------------------
         /*
         初期値が確認できたら、削除予定
         shooterLeft.configNominalOutputForward(0, Const.kTimeoutMs);
@@ -163,7 +187,7 @@ public class Robot extends TimedRobot {
 
         //モードのクラスの生成
         driveMode = new DriveMode(drive, intake, intakeBelt, shooter, controller);
-        panelRotationMode = new PanelRotationMode(drive, panel, controller);
+        panelRotationMode = new PanelRotationMode(drive, panel, arm, controller);
         shootingBallMode = new ShootingBallMode(drive, shooter, arm, intakeBelt, controller);
         climbMode = new ClimbMode(drive, arm, climb, controller);
     }

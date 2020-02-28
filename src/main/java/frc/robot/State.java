@@ -10,10 +10,10 @@ public class State {
     public double SetarmAngle;
     public double NowarmAngle;
     public double armAngle;
+    public boolean armPID_ON;   //PIDするかどうか
     public double climbSlideMotorSpeed;
     public double panelManualSpeed;
     public double shooterAngle;
-    public double armRotateSpeed;
     public ShooterState shooterState;
     public IntakeState intakeState;
     public IntakeBeltState intakeBeltState;
@@ -54,6 +54,7 @@ public class State {
 
         //Arm
         armOutState = ArmOutState.k_DoNothing;
+        armPID_ON   = false;
         armMotorSpeed = 0;
         SetarmAngle = 0;
         NowarmAngle = 0;

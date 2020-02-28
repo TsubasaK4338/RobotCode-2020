@@ -38,37 +38,45 @@ public class Arm{
             //---------------------------------------------------------------
             //砲台の角度を基本状態に
             case k_ChangeBasic:
-                state.SetarmAngle = Const.ArmMinAngle;
+                state.armPID_ON = false;
+                ArmChangeBasic();
                 break;
             //---------------------------------------------------------------
-            //砲台の角度をセル発射用に
+            //砲台の角度をセル発射用に(PID)
             case k_Shoot:
+                state.armPID_ON = true;
                 state.SetarmAngle = Const.ArmShootAngle;
                 break;
             //---------------------------------------------------------------
-            //砲台の角度をパネル回転用に
+            //砲台の角度をパネル回転用に(PID)
             case k_Panel:
+                state.armPID_ON = true;
                 state.SetarmAngle = Const.ArmPanelAngle;
                 break;
             //---------------------------------------------------------------
             //砲台の角度を微調整 
             case k_LittleAaim:
+                state.armPID_ON = false;
                 ArmAiming(state);
                 break;
             //---------------------------------------------------------------
-            //砲台の角度を地面と平行に（使う？） 
+            //砲台の角度を地面と平行に(PID) 
             case k_Parallel:
+                state.armPID_ON = true;
                 state.SetarmAngle = Const.ArmParallelAngle;
                 break;
             //---------------------------------------------------------------
             //何もしない
             case k_DoNothing:
-                state.SetarmAngle = state.NowarmAngle;
+                state.armPID_ON = false;
                 break;
             //---------------------------------------------------------------
         }
         
-        ArmPIDMove(state.SetarmAngle, state.NowarmAngle);
+        //PIDがONの時、設定した角度までPID制御
+        if(state.armPID_ON == true){
+            ArmPIDMove(state.SetarmAngle, state.NowarmAngle);
+        }
     }
 
     //--------------------------------------------------------------------------------
@@ -77,20 +85,20 @@ public class Arm{
 
         if(armSensor.getArmFrontSensor()){
             //------------------------------------------
-            //角度が初期状態（0度）
-            if(state.armRotateSpeed < 0){
-               ArmMove(state.armRotateSpeed * Const.ArmMagni);
+            //角度が初期状態（-30度）
+            if(state.armMotorSpeed > 0){
+               ArmMove(state.armMotorSpeed * Const.ArmMagni);
             }
         }else if(armSensor.getArmBackSensor()){
             //------------------------------------------
-            //角度が最も上（135度）
-            if(state.armRotateSpeed > 0){
-                ArmMove(state.armRotateSpeed * Const.ArmMagni);
+            //角度が最も上（80度）
+            if(state.armMotorSpeed < 0){
+                ArmMove(state.armMotorSpeed * Const.ArmMagni);
             }
         }else{
             //------------------------------------------
-            //角度が0度～135度
-                ArmMove(state.armRotateSpeed * Const.ArmMagni);           
+            //角度が-30度～80度
+                ArmMove(state.armMotorSpeed * Const.ArmMagni);           
         }
 
     }
@@ -110,18 +118,16 @@ public class Arm{
     }
 
     //--------------------------------------------------------------------------------
-    /*
-    //砲台の位置を管理
-    //砲台を初期状態にするコマンド       
+    
+    //砲台を初期状態にする     
     void ArmChangeBasic(){
-        while(armSensor.getArmFrontSensor){               
+        while(!armSensor.getArmFrontSensor()){               
             //角度下限認識スイッチが反応したら関数を抜ける
             //角度下限認識スイッチが反応してなかったら、回す
-            ArmMove(Const.armBasicspeed);
+            ArmMove(-Const.armBasicSpeed);
         }
     }
     
-    */
     //---------------------------------------------------------------------
     //砲台角度制御に関する計算式
 
@@ -131,7 +137,7 @@ public class Arm{
 
         double NowAngle;
         NowAngle = Const.ArmAngleDifference / Const.ArmPointDifference *
-                (ArmNowPoint - Const.ArmMinPoint) + Const.ArmMinAngle;
+                   (ArmNowPoint - Const.ArmMinPoint) + Const.ArmMinAngle;
 
         return NowAngle;
     }
