@@ -45,9 +45,22 @@ public class Const {
 
         //Arm
         public static final double CanonFullSpeedTime = 0.3;
+	
+	
+	//アームの可動域の角度＆エンコーダーからの値の最大
+      	public static final double CanonMaxAngle   = 80;
+      	public static final double CanonMinAngle   = -30;
+      	public static final double CanonMaxPoint   = 496;   
+      	public static final double CanonMinPoint   = 162;
+  
+      	public static final double CanonPointError = CanonMaxAngle - CanonMinAngle;
+      	public static final double CanonAngleError = CanonMaxPoint - CanonMinPoint;
+  
+   	 //アームの重力オフセット最大値（角度が地面と平行であり、Cos = 1の時）
+      	public static final double CanonMaxOffset = -0.13;
 
 
-    //Seosor
+
 
 
     //その他
