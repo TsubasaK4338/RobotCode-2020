@@ -1,68 +1,93 @@
-package frc.robot;
+package frc.robot.subClass;
 
 public class Const {
 
     //ControllerPort(コントローラーのポート)
-	public static final int JoystickPort = 0;
-	public static final int DriveControllerPort = 0;
+    public static final int JoystickPort = 0;
+    public static final int DriveControllerPort = 0;
     public static final int OperateControllerPort = 1;
 
-
-　　
-	//マイコンポート宣言（ロボリオ）
-        
-        //Drive-motor-port
-	public static final int DriveRightFrontPort = 0;
-	public static final int DriveRightBackPort = 5;
-        public static final int DriveLeftFrontPort = 1;
-        public static final int DriveLeftBackPort = 6;
-
-        //Arm-Motor-port & Encoder
-        public static final int CanonMotorPort = 0;
-        public static final int CanonEncoderPort_A = 0;
-        public static final int CanonEncoderPort_B = 0;
-
-        public static final int ShootMotorRightPort = 0;
-        public static final int ShootMotorLeftPort  = 0;
-        public static final int ShootEncoderRightPort_A = 0;
-        public static final int ShootEncoderRightPort_B = 0;
-        public static final int ShootEncoderLeftPort_A  = 0;
-        public static final int ShootEncoderLeftPort_B  = 0;
-
-        public static final int IntakeMotorPort = 0;
-        
-        public static final int BeltMotorFrontPort = 0;
-        public static final int BeltMotorBackPort  = 0;
-
-        public static final int HangingMotorPort = 0;
-        public static final int HangingEncoderPort_A = 0;
-        public static final int HangingEncoderPort_B = 0;
-
-	
-	//台形加速時間宣言
-        //drive
-        public static final double DriveFullSpeedTime = 0.5;
-
-        //Arm
-        public static final double CanonFullSpeedTime = 0.3;
-	
-	
-	//アームの可動域の角度＆エンコーダーからの値の最大
-      	public static final double CanonMaxAngle   = 80;
-      	public static final double CanonMinAngle   = -30;
-      	public static final double CanonMaxPoint   = 496;   
-      	public static final double CanonMinPoint   = 162;
-  
-      	public static final double CanonPointError = CanonMaxAngle - CanonMinAngle;
-      	public static final double CanonAngleError = CanonMaxPoint - CanonMinPoint;
-  
-   	 //アームの重力オフセット最大値（角度が地面と平行であり、Cos = 1の時）
-      	public static final double CanonMaxOffset = -0.13;
+    public static final double deadband = 0.2;
 
 
+    //Drive-motor-port
+    public static final int DriveRightFrontPort = 2;
+    public static final int DriveRightBackPort = 12;
+    public static final int DriveLeftFrontPort = 6;
+    public static final int DriveLeftBackPort = 13;
 
+    //Arm - Motor-port & Encoder - port
+    public static final int ArmMotorPort = 3;
+
+
+    public static final int IntakeMotorPort = 14;
+    public static final int IntakeBeltSensorFrontPort = 0;
+    public static final int IntakeBeltSensorBackPort = 1;
+
+    public static final int HangingMotorPort = 7;
+
+
+    //Drive
+    public static final double DriveFullSpeedTime = 0.5;
+
+    //Sensor
 
 
     //その他
     public static final double Deadband = 0.2;
+
+
+    //Shooter
+    public static final int shooterLeftMotor = 4;
+    public static final int shooterRightMotor = 5;
+    public static final int shooterMotorMaxOutput = 100000;
+    public static final int kSlotIdx = 0;
+    public static final int kPIDLoopIdx = 0;
+    public static final int kTimeoutMs = 30;
+    public final static Gains kGains_Velocit = new Gains(0.01, 0.000005, 0, 1023.0 / 7200.0, 300, 1.00, 20000000);
+    public final static double shooterOutTakeSpeed = -0.2;
+    public final static double shooterIntakeSpeed = 0.18;
+
+
+    //Intake
+    public final static double intakeSpeed = 0.8;
+    public final static double outtakeSpeed = -0.6;
+    public final static int intakeBeltFrontMotor = 11;
+    public final static int intakeBeltBackMotor = 15;
+
+
+    //Climb
+    public static final double climbMotorAdvanceSpeed = 0.30;
+    public static final double armMotorAdvanceSpeed = 0.15;
+    public static final double climbMotorShrinkSpeed = -0.30;
+    public static final double armMotorShrinkSpeed = -0.15;
+    public static final double unLockAngle = 30;
+    public static final double lockAngle = 0;
+    public static final double slideMotorRight = 0.30;
+    public static final double slideMotorLeft = -0.30;
+
+
+    //ARM
+    public static final int armMotor = 3;
+    public static final double armBasicSpeed = 0.05;
+    //スティックの傾きに対するモーターの速さの倍率
+    public static final double ArmMagni = 0.005;
+    //アームの可動域の角度＆エンコーダーからの値の最大
+    public static final double ArmMaxAngle = 110;
+    public static final double ArmMinAngle = -30;
+    public static final double ArmMaxPoint = 496;
+    public static final double ArmMinPoint = 162;
+
+    public static final double ArmAngleDifference = ArmMaxAngle - ArmMinAngle;
+    public static final double ArmPointDifference = ArmMaxPoint - ArmMinPoint;
+
+    public static final double ArmMaxOffset = -0.13;
+
+    //目標角度（現在不明）
+    public static final double ArmShootAngle = 0;
+    public static final double ArmParallelAngle = 0;
+    public static final double ArmPanelAngle = 0;
+
+
+    public static final double shooterPanelSpeed = 0.2;
 }

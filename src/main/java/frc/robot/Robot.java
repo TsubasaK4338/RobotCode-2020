@@ -1,222 +1,235 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
+import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.ctre.phoenix.motorcontrol.SensorCollection;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.Hand;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import frc.robot.subClass.*;
 
 //TalonSRX&VictorSPXのライブラリー
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 public class Robot extends TimedRobot {
 
-  //コントローラー
-  //とりあえず、Xbox2つ
-  XboxController driver, operator;
+    //コントローラー
+    //とりあえず、XboxController2つ
+    XboxController driver, operator;
+    Joystick joystick;
+    Controller controller;
 
-  //モーター(全11個)
-    
     //DriveMotor
-    WPI_TalonSRX  driveRightFront,driveLeftFront;
-    VictorSPX driveRightBack,driveLeftBack;
+    WPI_TalonSRX driveRightFrontMotor, driveLeftFrontMotor;
+    VictorSPX driveRightBackMotor, driveLeftBackMotor;
 
-    //アームの角度変更モーター＆エンコーダー
-    WPI_TalonSRX CanonMotor;
-    Encoder CanonEncoder;
+    //ShooterMotor
+    TalonSRX shooterLeftMotor, shooterRightMotor;
 
-    //発射部分のモーター＆エンコーダー（コンパネぐるぐるの時も使う）
-    WPI_TalonSRX ShootMotorRight , ShootMotorLeft;
-    Encoder ShootEncoderRight , ShootEncoderLeft;
+    //armMotor
+    TalonSRX armMotor;
+    SensorCollection armEncoder;
+    //IntakeMotor
+    VictorSPX intakeBeltFrontMotor, intakeBeltBackMotor;
+    VictorSPX intakeMotor;
 
-    //インテイクモーター（ロボット先端のアレ）
-    VictorSPX IntakeMotor;
-    
-    //アーム内部のベルトモーター
-    VictorSPX BeltMotorFront , BeltMotorback;
+    //センサー
+    DigitalInput intakeFrontSensor, intakeBackSensor;
 
-    //ぶら下がり用のモーター&エンコーダー
-    WPI_TalonSRX HangingMotor;
-    Encoder HangingEncoder;
-  
+    //カメラ
+    CameraServer camera;
 
-  //センサー
-  ADXRS450_Gyro gyro;
+    //SubClass
+    Drive drive;
+    State state;
+    Shooter shooter;
+    Intake intake;
+    IntakeBelt intakeBelt;
+    Climb climb;
+    Arm arm;
+    ArmSensor armSensor;
+    Panel panel;
 
-  //SubClass
-  Drive drive;
-  State state;
+    //モード
+    PanelRotationMode panelRotationMode;
+    ShootingBallMode shootingBallMode;
+    DriveMode driveMode;
+    ClimbMode climbMode;
 
-  @Override
-  public void robotInit() {
+    @Override
+    public void robotInit() {
 
-    //コントローラーの初期化
-    driver = new XboxController(Const.DriveControllerPort);
-    operator = new XboxController(Const.OperateControllerPort);
+        //Intakeセンサー
+        intakeFrontSensor = new DigitalInput(Const.IntakeBeltSensorFrontPort);
+        intakeBackSensor = new DigitalInput(Const.IntakeBeltSensorBackPort);
 
-    //gyroの初期化
-    gyro = new ADXRS450_Gyro();
+        //シューターのモーター
+        shooterLeftMotor = new TalonSRX(Const.shooterLeftMotor);
+        shooterRightMotor = new TalonSRX(Const.shooterRightMotor);
 
-    //----------------------------------------------------------------
-    //DriveMotor
-    //ドライブモーターの初期化
-    driveRightFront = new WPI_TalonSRX(Const.DriveRightFrontPort);
-    driveRightBack = new VictorSPX(Const.DriveRightBackPort);
-    driveLeftFront = new WPI_TalonSRX(Const.DriveLeftFrontPort);
-    driveLeftBack = new VictorSPX(Const.DriveLeftBackPort);
-    //ドライブモーターの台形加速&フォローの設定
-    driveLeftFront.configOpenloopRamp(Const.DriveFullSpeedTime);
-    driveLeftBack.follow(driveLeftFront);
-    driveRightFront.configOpenloopRamp(Const.DriveFullSpeedTime);
-    driveRightBack.follow(driveRightFront);
-    
-    //----------------------------------------------------------------
-    //ArmMotor
-    
-      //アームの角度変更モーター&エンコーダーの初期化
-      CanonMotor = new WPI_TalonSRX(Const.CanonMotorPort);
-      CanonEncoder = new Encoder(Const.CanonEncoderPort_A , Const.CanonEncoderPort_B);
-      //アームの角度変更の台形加速設定
-      CanonMotor.configOpenloopRamp(Const.CanonFullSpeedTime);
+        //アームのモーター
+        armMotor = new TalonSRX(Const.armMotor);
+        armMotor.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.NormallyOpen);
+        armMotor.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.NormallyOpen);
 
-      //発射部分のモーター＆エンコーダーの初期化
-      ShootMotorLeft  = new WPI_TalonSRX(Const.ShootMotorLeftPort);
-      ShootMotorRight = new WPI_TalonSRX(Const.ShootMotorRightPort);
-      ShootEncoderLeft  = new Encoder(Const.ShootEncoderLeftPort_A , Const.ShootEncoderLeftPort_B);
-      ShootEncoderRight = new Encoder(Const.ShootEncoderRightPort_A , Const.ShootEncoderRightPort_B);
+        //IntakeBelt
+        intakeBeltFrontMotor = new VictorSPX(Const.intakeBeltFrontMotor);
+        intakeBeltBackMotor = new VictorSPX(Const.intakeBeltBackMotor);
+        intakeMotor = new VictorSPX(Const.IntakeMotorPort);
 
-      //インテイクモーターの初期化
-      IntakeMotor = new VictorSPX(Const.IntakeMotorPort);
+        //IntakeBeltのフォローの設定
+        intakeBeltBackMotor.follow(intakeBeltFrontMotor);
 
-      //アーム内部のベルトモーターの初期化
-      BeltMotorFront = new VictorSPX(Const.BeltMotorFrontPort);
-      BeltMotorback  = new VictorSPX(Const.BeltMotorBackPort);
+        //コントローラーの初期化
+        operator = new XboxController(Const.OperateControllerPort);
+        driver = new XboxController(Const.DriveControllerPort);
+        //joystick = new Joystick(Const.JoystickPort);
+        controller = new Controller(driver, operator);
 
-      //ぶら下がり用モーター＆エンコーダーの初期化
-      HangingMotor = new WPI_TalonSRX(Const.HangingMotorPort);
-      HangingEncoder = new Encoder(Const.HangingEncoderPort_A , Const.HangingEncoderPort_B);
+        //cameraの初期化
+        camera = CameraServer.getInstance();
+        camera.startAutomaticCapture();
 
-    //----------------------------------------------------------------
+        //ドライブモーターの初期化
+        driveRightFrontMotor = new WPI_TalonSRX(Const.DriveRightFrontPort);
+        driveRightBackMotor = new VictorSPX(Const.DriveRightBackPort);
+        driveLeftFrontMotor = new WPI_TalonSRX(Const.DriveLeftFrontPort);
+        driveLeftBackMotor = new VictorSPX(Const.DriveLeftBackPort);
 
+        //ドライブモーターの台形加速&フォローの設定
+        driveLeftFrontMotor.configOpenloopRamp(Const.DriveFullSpeedTime);
+        driveLeftBackMotor.follow(driveLeftFrontMotor);
+        driveRightFrontMotor.configOpenloopRamp(Const.DriveFullSpeedTime);
+        driveRightBackMotor.follow(driveRightFrontMotor);
 
-    drive = new Drive(driveLeftFront, driveRightFront, gyro);
-    state = new State();
+        //シューターの設定を初期化
+        shooterRightMotor.configFactoryDefault();
+        shooterLeftMotor.configFactoryDefault();
 
-  }
+        //シューターのPIDの設定
+        shooterLeftMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,
+                Const.kPIDLoopIdx,
+                Const.kTimeoutMs);
+        shooterRightMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,
+                Const.kPIDLoopIdx,
+                Const.kTimeoutMs);
+        shooterLeftMotor.config_kF(Const.kPIDLoopIdx, Const.kGains_Velocit.kF, Const.kTimeoutMs);
+        shooterLeftMotor.config_kP(Const.kPIDLoopIdx, Const.kGains_Velocit.kP, Const.kTimeoutMs);
+        shooterLeftMotor.config_kI(Const.kPIDLoopIdx, Const.kGains_Velocit.kI, Const.kTimeoutMs);
+        shooterLeftMotor.config_kD(Const.kPIDLoopIdx, Const.kGains_Velocit.kD, Const.kTimeoutMs);
 
-  @Override
-  public void robotPeriodic() {
-  }
+        shooterRightMotor.config_kF(Const.kPIDLoopIdx, Const.kGains_Velocit.kF, Const.kTimeoutMs);
+        shooterRightMotor.config_kP(Const.kPIDLoopIdx, Const.kGains_Velocit.kP, Const.kTimeoutMs);
+        shooterRightMotor.config_kI(Const.kPIDLoopIdx, Const.kGains_Velocit.kI, Const.kTimeoutMs);
+        shooterRightMotor.config_kD(Const.kPIDLoopIdx, Const.kGains_Velocit.kD, Const.kTimeoutMs);
 
-  @Override
-  public void autonomousInit() {
-  }
+        shooterLeftMotor.configMaxIntegralAccumulator(Const.kPIDLoopIdx, Const.kGains_Velocit.MaxIntegralAccumulator);
+        shooterRightMotor.configMaxIntegralAccumulator(Const.kPIDLoopIdx, Const.kGains_Velocit.MaxIntegralAccumulator);
 
-  @Override
-  public void autonomousPeriodic() {
-  }
+        shooterRightMotor.setSensorPhase(true);
+        shooterLeftMotor.setSensorPhase(true);
 
-  @Override
-  public void teleopPeriodic() {
-    
-    //この関数はずっとループして呼ばれるので、ループの最初にモード確認するお！
-    
-    //根本的な制御モードの区別、そして入力確認
-    switch(state.controlState) {
-      
-      //--------------------------------------------------------------------------------
-      
-      //【ドライブモード】
-      case m_Drive:
-        
-        //OperatorのLBボタンが押されたら、セル発射モードへ切り替え
-        if(operator.getBumper(Hand.kLeft)){
-          state.controlState = State.ControlState.m_Firingball;
-          break;
-        }
-        
-        //OperatorのBackボタンが押されたら、パネル回転モードへ切り替え
-        if(operator.getBackButton()){
-          state.controlState = State.ControlState.m_Panelrotation;
-          break;
-        }  
+        /*
+        初期値が確認できたら、削除予定
+        shooterLeft.configNominalOutputForward(0, Const.kTimeoutMs);
+        shooterLeft.configNominalOutputReverse(0, Const.kTimeoutMs);
+        shooterLeft.configPeakOutputForward(1, Const.kTimeoutMs);
+        shooterLeft.configPeakOutputReverse(-1, Const.kTimeoutMs);
+        */
 
-        //driverのstartボタンがおされたら、ぶら下がりモードへ切り替え
-        if(driver.getStartButtonPressed()){
-          state.controlState = State.ControlState.m_Hanging;
-          break;
-        }
-    
-        /********** Drive ***********/
-          state.driveState = State.DriveState.kManual;
-          state.driveStraightSpeed = Util.deadbandProcessing(driver.getY(Hand.kLeft));
-          state.driveRotateSpeed = Util.deadbandProcessing(driver.getX(Hand.kRight));
+        /*
+        初期値が確認できたら、削除予定
+        shooterRight.configNominalOutputForward(0, Const.kTimeoutMs);
+        shooterRight.configNominalOutputReverse(0, Const.kTimeoutMs);
+        shooterRight.configPeakOutputForward(1, Const.kTimeoutMs);
+        shooterRight.configPeakOutputReverse(-1, Const.kTimeoutMs);
+         */
 
-        
-       //ここはてらゆうにまかせようじゃあないか！！
-        break;
-      
-     //---------------------------------------------------------------------------------
-    
-     //【セル発射モード】
-     case m_Firingball:
+        //サブクラスの生成
+        armSensor   = new ArmSensor(armMotor);
+        //arm = new Arm(armMotor, armSensor);
+        drive       = new Drive(driveLeftFrontMotor, driveRightFrontMotor);
+        arm         = new Arm(armMotor, armEncoder, armSensor);
+        shooter     = new Shooter(shooterRightMotor, shooterLeftMotor);
+        intake      = new Intake(intakeMotor);
+        intakeBelt  = new IntakeBelt(intakeBeltFrontMotor, intakeFrontSensor, intakeBackSensor);
+        panel       = new Panel(shooter);
+        state       = new State();
 
-        //OperatorのLBボタンが離されたら、ドライブモードへ切り替え
-        if(operator.getBumperReleased(Hand.kLeft)){
-          state.controlState = State.ControlState.m_Drive;
-          break;
-        }
-
-          //ここはぼくががんばる
-        break;
-
-     //---------------------------------------------------------------------------------
-      
-     //【コンパネぐるぐるモード】
-     case m_Panelrotation:
-
-        //OperatorのBackボタンが離されたら、ドライブモードへ切り替え
-        if(operator.getBackButtonReleased()){
-          state.controlState = State.ControlState.m_Drive;
-          break;
-        }
-
-          //ここをしゅｎｙに任せようじゃあないか！！
-
-        break;
-
-     //---------------------------------------------------------------------------------
-      
-     //【ぶら下がりモード】
-     case m_Hanging:
-
-        //driverのBackボタンがおされたら、ドライブモードへ切り替え
-        if(driver.getBackButtonPressed()){
-          state.controlState = State.ControlState.m_Drive;
-          break;
-        }
-
-          //ぶら下がりの仕様がよくわからん…てらゆう、お前知ってるんだって？じゃぁお前担当な！（もしくは女王）
-
-        break;
+        //モードのクラスの生成
+        driveMode = new DriveMode(drive, intake, intakeBelt, shooter, controller);
+        panelRotationMode = new PanelRotationMode(drive, panel, controller);
+        shootingBallMode = new ShootingBallMode(drive, shooter, arm, intakeBelt, controller);
+        climbMode = new ClimbMode(drive, arm, climb, controller);
     }
-    //---------------------------------------------------------------------------------
-    
-    //入力確認が終わったら最後にStateを確認（apply）しよう
 
-   　drive.apllyState(state);
-    
-    
-  }
+    @Override
+    public void robotPeriodic() {
+        //処理なし
+    }
 
-  @Override
-  public void testPeriodic() {
-  }
+    @Override
+    public void autonomousInit() {
+
+        /*
+        driveLeftFront.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,0,0);
+        driveRightFront.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative,0,0);
+
+        driveLeftFront.setSensorPhase(true);
+        driveRightFront.setSensorPhase(true);
+
+        driveRightFront.setInverted(false);
+        driveLeftFront.setInverted(false);
+
+        driveLeftFront.configNominalOutputForward(0,0);
+        driveLeftFront.configNominalOutputReverse(0,0);
+        driveLeftFront.configPeakOutputForward(1,0);
+        driveLeftFront.configPeakOutputReverse(-1,0);
+
+        driveRightFront.configNominalOutputForward(0,0);
+        driveRightFront.configNominalOutputReverse(0,0);
+        driveRightFront.configPeakOutputForward(1,0);
+        driveRightFront.configPeakOutputReverse(-1,0);
+
+        driveLeftFront.configAllowableClosedloopError(0,0,0);
+
+        driveRightFront.configAllowableClosedloopError(0,0,0);
+        driveLeftFront.config_kF(0,0.0,0);
+        driveLeftFront.config_kP(0,0.15,0);
+        driveLeftFront.config_kI(0,0.0,0);
+        driveLeftFront.config_kD(0,1.0,0);
+
+        driveRightFront.config_kF(0,0.0,0);
+        driveRightFront.config_kP(0,0.15,0);
+        driveRightFront.config_kI(0,0.0,0);
+        driveRightFront.config_kD(0,1.0,0);
+        */
+
+    }
+
+    @Override
+    public void autonomousPeriodic() {
+        /*
+        double targetPositionRotations = Util.deadbandProcessing(_joy.getY()) * 10.0 * 4096;
+        driveLeftFront.set(ControlMode.Position, targetPositionRotations);
+        driveRightFront.set(ControlMode.Position, targetPositionRotations);
+         */
+    }
+
+    @Override
+    public void teleopPeriodic() {
+        climbMode.applyMode(state);
+        driveMode.applyMode(state);
+        panelRotationMode.applyMode(state);
+        shootingBallMode.applyMode(state);
+    }
+
+    @Override
+    public void testPeriodic() {
+    }
 }
