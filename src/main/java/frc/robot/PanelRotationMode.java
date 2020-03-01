@@ -20,8 +20,7 @@ public class PanelRotationMode {
 
     public void applyMode(State state) {
         if (state.controlState == State.ControlState.m_PanelRotation) {
-            //もう一度ボタンが押されたら切り替え
-            if (operator.getBackButton()) {
+
                 if (operator.getXButton()) {
                     //赤に合わせる
                     state.panelState = State.PanelState.p_toRed;
@@ -45,20 +44,10 @@ public class PanelRotationMode {
                 } else if(operator.getBumper(GenericHID.Hand.kRight)){
                     //砲台をパネルに合わせた角度へ
                     state.armOutState = State.ArmOutState.k_Panel;
-                } else {
-                    //何もなし
-                    state.panelState = State.PanelState.p_DoNothing;                    
                 }
-            } else {
-                //ドライブモードへ切り替え
-                state.controlState = State.ControlState.m_Drive;
-                state.driveState   = State.DriveState.kManual;
-                state.panelState   = State.PanelState.p_DoNothing;
-                state.armOutState  = State.ArmOutState.k_ChangeBasic;
-                Util.sendConsole("Mode", "DriveMode");
-            }
+          
             drive.applyState(state);
-            panel.applyState(state);
+            //panel.applyState(state);
             arm.applyState(state);
         }
     }

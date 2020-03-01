@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID;
 import frc.robot.subClass.*;
 
 //TalonSRX&VictorSPXのライブラリー
@@ -76,6 +77,7 @@ public class Robot extends TimedRobot {
         armMotor = new TalonSRX(Const.armMotor);
         armMotor.configForwardLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.NormallyOpen);
         armMotor.configReverseLimitSwitchSource(LimitSwitchSource.Deactivated, LimitSwitchNormal.NormallyOpen);
+        armEncoder = new SensorCollection(armMotor);
 
         //IntakeBelt
         intakeBeltFrontMotor = new VictorSPX(Const.intakeBeltFrontMotor);
@@ -182,11 +184,11 @@ public class Robot extends TimedRobot {
         shooter     = new Shooter(shooterRightMotor, shooterLeftMotor);
         intake      = new Intake(intakeMotor);
         intakeBelt  = new IntakeBelt(intakeBeltFrontMotor, intakeFrontSensor, intakeBackSensor);
-        panel       = new Panel(shooter);
+        //panel       = new Panel(shooter);
         state       = new State();
 
         //モードのクラスの生成
-        driveMode = new DriveMode(drive, intake, intakeBelt, shooter, controller);
+        driveMode = new DriveMode(drive, intake, intakeBelt, shooter, arm, controller);
         panelRotationMode = new PanelRotationMode(drive, panel, arm, controller);
         shootingBallMode = new ShootingBallMode(drive, shooter, arm, intakeBelt, controller);
         climbMode = new ClimbMode(drive, arm, climb, controller);
@@ -245,12 +247,114 @@ public class Robot extends TimedRobot {
          */
     }
 
+    
+    @Override
+    public void teleopInit(){
+    }
+
+    @Override
+    public void disabledInit(){
+    }
+
     @Override
     public void teleopPeriodic() {
-        climbMode.applyMode(state);
-        driveMode.applyMode(state);
-        panelRotationMode.applyMode(state);
-        shootingBallMode.applyMode(state);
+
+        //根本的な制御モードの区別、そして入力確認
+    switch(state.controlState) {
+      
+        //-----------------------------------------------------------------------------------------------------      
+        //【ドライブモード】
+        case m_Drive:
+  
+         Util.sendConsole("Mode", "DriveMode");
+          //------------------------------------------------
+          //モード切替
+          //セル発射モードへ切り替え（この時、砲台をゴールに近い角度へ）
+          if(operator.getBumperPressed(GenericHID.Hand.kLeft)){
+            state.controlState = State.ControlState.m_ShootingBall;
+            state.armOutState = State.ArmOutState.k_Shoot;
+            //Util.sendConsole("Mode", "ShootingBallMode");
+            break;
+          }        
+          
+          //パネル回転モードへ切り替え（この時、砲台をパネルに合わせた角度へ）
+          if(operator.getBackButtonPressed()){
+            state.controlState = State.ControlState.m_PanelRotation;
+            state.armOutState = State.ArmOutState.k_Panel;
+            //Util.sendConsole("Mode", "PanelRotationMode");
+            break;
+          }  
+          
+          //ぶら下がりモードへ切り替え
+          if(driver.getStartButtonPressed()){
+            state.controlState = State.ControlState.m_Climb;
+            //Util.sendConsole("Mode", "ClimbMode");
+            break;
+          }
+  
+          //-------------------------------------
+          //本処理
+          driveMode.applyMode(state);
+  
+          break;        
+        //-----------------------------------------------------------------------------------------------------
+        //【セル発射モード】
+        case m_ShootingBall:
+  
+          Util.sendConsole("Mode", "ShootingBallMode");
+          //------------------------------------------------
+          //モード切替
+          //もう一度押されたら、ドライブモードへ切り替え（この時、砲台を基本状態に）
+          if(operator.getBumperPressed(GenericHID.Hand.kLeft)){
+            state.controlState  = State.ControlState.m_Drive;
+            state.armOutState = State.ArmOutState.k_Basic;
+            //Util.sendConsole("Mode", "DriveMode");
+            break;
+          }
+   
+          //本処理
+          shootingBallMode.applyMode(state);
+          
+          break; 
+        //-----------------------------------------------------------------------------------------------------  
+        //【コンパネぐるぐるモード】
+        case m_PanelRotation:
+          
+        Util.sendConsole("Mode", "PanelRotationMode");
+          //------------------------------------------------
+          //モード切替
+          //もう一度押されたら、ドライブモードへ切り替え
+          if(operator.getBackButtonPressed()){
+            state.controlState = State.ControlState.m_Drive;
+            //Util.sendConsole("Mode", "DriveMode");
+            break;
+          }
+
+          //本処理
+          panelRotationMode.applyMode(state);
+        
+          break;  
+        //---------------------------------------------------------------------------------      
+        //【ぶら下がりモード】
+        case m_Climb:
+  
+        Util.sendConsole("Mode", "ClimbMode");
+          //------------------------------------------------
+          //モード切替
+          //もう一度おされたら、ドライブモードへ切り替え
+          if(driver.getBackButtonPressed()){
+            state.controlState = State.ControlState.m_Drive;
+            //Util.sendConsole("Mode", "DriveMode");
+            break;
+          }
+
+          //本処理
+          climbMode.applyMode(state);
+  
+          break;        
+        //-----------------------------------------------------------------------------------------------------     
+      }
+
     }
 
     @Override

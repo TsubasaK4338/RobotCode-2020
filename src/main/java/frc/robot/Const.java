@@ -69,9 +69,10 @@ public class Const {
 
     //ARM
     public static final int armMotor = 3;
-    public static final double armBasicSpeed = 0.1;
-    //スティックの傾きに対するモーターの速さの倍率
-    public static final double ArmMagni = 0.1;
+    //定速で回したい時
+    public static final double ArmLowDownSpeed = -0.05;
+    public static final double ArmHighDownSpeed = -0.2;
+    public static final double ArmBasicUpSpeed = 0.4;
     //アームの可動域の角度＆エンコーダーからの値の最大
     public static final double ArmMaxAngle = 80;
     public static final double ArmMinAngle = -30;
@@ -82,12 +83,13 @@ public class Const {
     public static final double ArmPointDifference = ArmMaxPoint - ArmMinPoint;
 
     public static final double ArmMaxOffset = 0.13;
+    public static final double ArmBorderAngle = -5;
 
     public final static Gains kGains_ArmPosition = new Gains(10, 0, 25, 0, 0, 1.00, 0);
 
 
     //目標角度（現在不明）
-    public static final double ArmShootAngle = 0;
+    public static final double ArmShootAngle = 30;
     public static final double ArmParallelAngle = 0;
     public static final double ArmPanelAngle = 0;
 

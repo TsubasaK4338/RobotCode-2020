@@ -53,7 +53,7 @@ public class State {
         climbSlideMotorSpeed = 0;
 
         //Arm
-        armOutState = ArmOutState.k_DoNothing;
+        armOutState = ArmOutState.k_Conserve;
         armPID_ON   = false;
         armMotorSpeed = 0;
         SetarmAngle = 0;
@@ -134,12 +134,12 @@ public class State {
     }
 
     public enum ArmOutState {
-        k_ChangeBasic,
+        k_Basic,
         k_Shoot,
         k_Panel,
         k_LittleAaim,
         k_Parallel,
-        k_DoNothing
+        k_Conserve
     }
 
     public enum PanelState {
