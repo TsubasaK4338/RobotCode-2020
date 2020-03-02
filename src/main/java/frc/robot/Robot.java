@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import edu.wpi.first.wpilibj.GenericHID;
 import frc.robot.subClass.*;
 
@@ -191,7 +192,7 @@ public class Robot extends TimedRobot {
 
         //モードのクラスの生成
         driveMode = new DriveMode(drive, intake, intakeBelt, shooter, arm);
-        panelRotationMode = new PanelRotationMode(drive, panel, controller);
+        panelRotationMode = new PanelRotationMode(drive, panel, arm, controller);
         shootingBallMode = new ShootingBallMode(drive, shooter, arm, intakeBelt, intake);
         climbMode = new ClimbMode(drive, arm, climb);
     }
@@ -256,22 +257,33 @@ public class Robot extends TimedRobot {
         state.stateInit();
 
         //Mode Change
-        if (operator.getBumper(GenericHID.Hand.kLeft)) {
-            //ボール発射モードへ切り替え
-            state.controlState = State.ControlState.m_ShootingBall;
-            Util.sendConsole("Mode", "ShootingBallMode");
-        } else if (operator.getBackButton()) {
-            //コントロールパネル回転モードへ切り替え
-            state.controlState = State.ControlState.m_PanelRotation;
-            Util.sendConsole("Mode", "PanelRotationMode");
-        } else if (driver.getStartButton()) {
-            //クライムモードへ切り替え
-            state.controlState = State.ControlState.m_Climb;
-            Util.sendConsole("Mode", "ClimbMode");
-        } else {
-            state.controlState = State.ControlState.m_Drive;
-            state.armState = State.ArmState.k_Basic;
-            Util.sendConsole("Mode", "DriveMode");
+        if(state.controlState != State.ControlState.m_Climb){
+
+            if (operator.getBumper(GenericHID.Hand.kLeft)) {
+                //ボール発射モードへ切り替え
+                state.controlState = State.ControlState.m_ShootingBall;
+                Util.sendConsole("Mode", "ShootingBallMode");
+            } else if (operator.getBackButton()) {
+                //コントロールパネル回転モードへ切り替え
+                state.controlState = State.ControlState.m_PanelRotation;
+                Util.sendConsole("Mode", "PanelRotationMode");
+            } else if (driver.getStartButtonPressed()) {
+                //クライムモードへ切り替え
+                state.controlState = State.ControlState.m_Climb;
+                Util.sendConsole("Mode", "ClimbMode");
+            } else {
+                state.controlState = State.ControlState.m_Drive;
+                state.armState = State.ArmState.k_Basic;
+                Util.sendConsole("Mode", "DriveMode");
+            }
+
+        }else{
+            //現在クライムモードの時
+            if (driver.getStartButtonPressed()) {
+                //もう一度押してドライブモードに戻る
+                state.controlState = State.ControlState.m_Drive;
+                Util.sendConsole("Mode", "DriveMode");
+           }
         }
 
         switch (state.controlState) {
@@ -311,12 +323,16 @@ public class Robot extends TimedRobot {
                 climbMode.applyMode(state);
                 break;
 
+            //----------------------------------------------------------------------------    
             case m_Drive:
                 //ほかに関係なくドライブ
                 state.driveState = State.DriveState.kManual;
                 state.driveStraightSpeed = Util.deadbandProcessing(-driver.getY(GenericHID.Hand.kLeft));
                 state.driveRotateSpeed = Util.deadbandProcessing(driver.getX(GenericHID.Hand.kRight));
 
+                //何もしてないときは基本状態
+                state.armState = State.ArmState.k_Basic;
+                //Arm・Intake
                 if (Util.deadbandCheck(driver.getTriggerAxis(GenericHID.Hand.kLeft))) {
                     //ボールを取り込む
                     state.intakeState = State.IntakeState.kIntake;
@@ -327,6 +343,12 @@ public class Robot extends TimedRobot {
                     state.intakeState = State.IntakeState.kOuttake;
                     state.intakeBeltState = State.IntakeBeltState.kOuttake;
                     state.shooterState = State.ShooterState.kouttake;
+                } else if (driver.getBumper(Hand.kLeft)){
+                    //砲台の角度を地面と平行に
+                    state.armState = State.ArmState.k_Parallel;                   
+                } else if (driver.getBumper(Hand.kRight)){
+                    //砲台の角度をシュート用角度に
+                    state.armState = State.ArmState.k_Shoot;   
                 } else {
                     //インテイクは何もしない
                     state.intakeState = State.IntakeState.doNothing;
@@ -336,7 +358,9 @@ public class Robot extends TimedRobot {
                 driveMode.applyMode(state);
                 break;
 
+            //----------------------------------------------------------------------------
             case m_PanelRotation:
+                state.armState = State.ArmState.k_Conserve;
                 //もう一度ボタンが押されたら切り替え
                 if (operator.getBackButton()) {
                     if (operator.getXButton()) {
@@ -359,6 +383,9 @@ public class Robot extends TimedRobot {
                         //手動左回転
                         state.panelState = State.PanelState.p_ManualRot;
                         state.panelManualSpeed = operator.getTriggerAxis(GenericHID.Hand.kRight);
+                    } else if (operator.getBumper(Hand.kRight)){
+                        //砲台をパネルに合わせた角度に
+                        state.armState = State.ArmState.k_Panel;
                     } else {
                         //何もなし
                         state.panelState = State.PanelState.p_DoNothing;
@@ -367,6 +394,7 @@ public class Robot extends TimedRobot {
                 panelRotationMode.applyMode(state);
                 break;
 
+            //----------------------------------------------------------------------------
             case m_ShootingBall:
                 state.armState = State.ArmState.k_Conserve;
                 if (operator.getBumper(GenericHID.Hand.kLeft)) {
@@ -376,24 +404,24 @@ public class Robot extends TimedRobot {
                         state.shooterPIDSpeed = operator.getTriggerAxis(GenericHID.Hand.kRight);
                         state.driveState = State.DriveState.kdoNothing;
                         state.intakeBeltState = State.IntakeBeltState.kOuttake;
-                    } else if (Util.deadbandCheck(driver.getX(GenericHID.Hand.kLeft))) {
+                    } else if (Util.deadbandCheck(operator.getX(GenericHID.Hand.kLeft))) {
                         //ドライブを少し動かす
                         state.shooterState = State.ShooterState.doNothing;
                         state.driveState = State.DriveState.kLow;
-                        state.driveRotateSpeed = driver.getX(GenericHID.Hand.kLeft);
-                        state.driveStraightSpeed = driver.getY(GenericHID.Hand.kRight);
-                    } else if (operator.getBButton()) {
+                        state.driveRotateSpeed = operator.getX(GenericHID.Hand.kLeft);
+                        //state.driveStraightSpeed = driver.getY(GenericHID.Hand.kRight);
+                    } else if (Util.deadbandCheck(operator.getTriggerAxis(GenericHID.Hand.kLeft))) {
                         //砲台の角度をゴールへ調節する
                         state.driveState = State.DriveState.kdoNothing;
                         state.shooterState = State.ShooterState.doNothing;
                         state.armState = State.ArmState.k_Shoot;
                         state.setArmAngle = Const.armShootAngle;
-                    } else if (Util.deadbandCheck(operator.getX(GenericHID.Hand.kLeft))) {
+                    } else if (Util.deadbandCheck(operator.getY(GenericHID.Hand.kLeft))) {
                         //砲台の角度を手動で調節
                         state.driveState = State.DriveState.kdoNothing;
                         state.shooterState = State.ShooterState.doNothing;
                         state.armState = State.ArmState.k_LittleAim;
-                        state.armMotorSpeed = operator.getX(GenericHID.Hand.kLeft);
+                        state.armMotorSpeed = operator.getY(GenericHID.Hand.kLeft);
                     } else {
                         state.shooterState = State.ShooterState.doNothing;
                         state.driveState = State.DriveState.kdoNothing;
