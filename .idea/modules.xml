@@ -3,8 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RobotCode-2020-hello.iml" filepath="$PROJECT_DIR$/RobotCode-2020-hello.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RobotCode-2020-hello.main.iml" filepath="$PROJECT_DIR$/.idea/modules/RobotCode-2020-hello.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RobotCode-2020-hello.test.iml" filepath="$PROJECT_DIR$/.idea/modules/RobotCode-2020-hello.test.iml" />
     </modules>
   </component>
 </project>
