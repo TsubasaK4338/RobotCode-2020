@@ -92,7 +92,7 @@ public class SendJson {
 
             json += ", \"モード変更履歴 \" : {";
             for(Map.Entry<Double, State.ControlMode> entry : modeChangeTime.entrySet()) {
-                json += jsonFormat(Double.toString(entry.getKey()), entry.getValue().toString() + ", ");
+                json += jsonFormat(Double.toStrientry.getKey()), entry.getValue().toString() + ", ");
             }
             json += "}";
 
