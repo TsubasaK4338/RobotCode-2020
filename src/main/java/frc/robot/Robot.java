@@ -62,6 +62,9 @@ public class Robot extends TimedRobot {
     Timer autonomousTimer;
     String gameData;
 
+    //JSON
+    SendJson sendJson;
+
     @Override
     public void robotInit() {
 
@@ -166,21 +169,6 @@ public class Robot extends TimedRobot {
 
         armMotor.setSensorPhase(true);
         armMotor.setInverted(true);
-        /*
-        初期値が確認できたら、削除予定
-        ShooterLeft.configNominalOutputForward(0, Const.kTimeoutMs);
-        shooterLeft.configNominalOutputReverse(0, Const.kTimeoutMs);
-        shooterLeft.configPeakOutputForward(1, Const.kTimeoutMs);
-        shooterLeft.configPeakOutputReverse(-1, Const.kTimeoutMs);
-        */
-
-        /*
-        初期値が確認できたら、削除予定
-        shooterRight.configNominalOutputForward(0, Const.kTimeoutMs);
-        shooterRight.configNominalOutputReverse(0, Const.kTimeoutMs);
-        shooterRight.configPeakOutputForward(1, Const.kTimeoutMs);
-        shooterRight.configPeakOutputReverse(-1, Const.kTimeoutMs);
-         */
 
         //サブクラスの生成
         armSensor = new ArmSensor(armMotor);
@@ -195,6 +183,9 @@ public class Robot extends TimedRobot {
         //モードのクラスの生成
         panelRotationMode = new PanelRotationMode(colorSensorServo);
         climbMode = new ClimbMode(arm, climbMotor, climbServo, slideMotor);
+
+        //JSON
+        sendJson = new SendJson();
     }
 
     @Override
@@ -254,13 +245,14 @@ public class Robot extends TimedRobot {
     public  void  teleopInit() {
         state.controlMode = State.ControlMode.m_Drive;
         panelRotationMode.contractServo();
+
+        sendJson.sendJsonInit();
     }
 
     @Override
     public void teleopPeriodic() {
 
-        System.out.println("leftSpeed" + shooterLeftMotor.getSelectedSensorVelocity());
-        System.out.println("RightSpeed" + shooterRightMotor.getSelectedSensorVelocity());
+        sendJson.timerStart();
 
         //状態初期化
         state.stateInit();
@@ -457,9 +449,9 @@ public class Robot extends TimedRobot {
         intake.applyState(state);
         intakeBelt.applyState(state);
 
+        sendJson.finalProcess(state.controlMode);
     }
 
     @Override
     public void testPeriodic() {
     }
-}
