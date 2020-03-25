@@ -109,9 +109,6 @@ Temporary Items
 !.vscode/launch.json
 !.vscode/extensions.json
 
-### Windows ###
-# Windows thumbnail cache files
-Thumbs.db
 ehthumbs.db
 ehthumbs_vista.db
 
@@ -158,8 +155,4 @@ bin/
 imgui.ini
 
 
-
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-
-# End of https://www.gitignore.io/api/c++,java,linux,macos,gradle,windows,visualstudiocode
+# End of https://www.gitignore.io/api/c++,java,linux,macos,gradle,windows,visualstudiocodegit
