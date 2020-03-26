@@ -290,7 +290,6 @@ public class Robot extends TimedRobot {
                         servoTimer.start();
                         servoTimerStarted = true;
                     }
-                    System.out.println(colorSensorServo.getAngle());
                     if(servoTimer.get() > 1){
                         state.controlMode = State.ControlMode.m_Drive;
                         servoTimerStarted = false;
@@ -298,7 +297,6 @@ public class Robot extends TimedRobot {
                 }
                 break;
         }
-        System.out.println(colorSensorServo.getAngle());
         Util.sendConsole("Mode", state.controlMode.toString());
 
         switch (state.controlMode) {
@@ -389,7 +387,6 @@ public class Robot extends TimedRobot {
                     if(Util.deadbandCheck(operator.getTriggerAxis(GenericHID.Hand.kLeft))){
                         //O LT 高出力でスライド
                         state.climbSlideMotorSpeed = -operator.getX(GenericHID.Hand.kLeft);
-                        System.out.println("Highhhhhhhhhhhhhhhhhhhhhhhh");
                     }else {
                         //1/2の出力でスライド
                         state.climbSlideMotorSpeed = operator.getX(GenericHID.Hand.kRight) / 2;

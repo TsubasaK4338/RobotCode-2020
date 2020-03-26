@@ -31,6 +31,7 @@ public class SendJson {
     public SendJson() {
         loopTimer = new Timer();
         sendTimer = new Timer();
+        modeChangeTime = new HashMap<>();
         voltageChangeTime = new HashMap<>();
         thread = new Thread(() -> { callPost(makeJson()); });
         thread.setDaemon(true);
@@ -54,7 +55,12 @@ public class SendJson {
             batterCheck();
             if(sendTimer.get() > 2.0) {
                 is_SendFinished = false;
-                thread.start();
+                callPost(makeJson());
+                // thread.start();
+                // System.out.println(makeJson());
+                // sendTimer.reset();
+                // sendTimer.start();
+                // is_SendFinished = true;
             }
             loopTimeMeasure(loopTimer.get());
         }
@@ -68,7 +74,8 @@ public class SendJson {
     }
 
     private void batterCheck() {
-        batteryVoltage = RobotController.getBatteryVoltage();
+        // 小数第二位で四捨五入
+        batteryVoltage = Math.round(RobotController.getBatteryVoltage() * 10) /10;
         if(preBatteryVoltage > batteryVoltage) {
             voltageChangeTime.put(sendTimer.get(), batteryVoltage);
         }
@@ -77,6 +84,7 @@ public class SendJson {
 
     private void loopTimeMeasure(double loopTime) {
         totalLoopTime += loopTime;
+        loopCount++;
         return;
     }
 
@@ -85,24 +93,26 @@ public class SendJson {
         json += "{";
 
         if(loopCount != 0) {
-            json += jsonFormat("平均ループ時間", Double.toString(totalLoopTime / loopCount) + "s");
+            json += jsonFormat("平均ループ時間(s)", Double.toString(totalLoopTime / loopCount) + "s");
         } else {
-            json += jsonFormat("平均ループ時間", "N/A");
+            json += jsonFormat("平均ループ時間(s)", "N/A");
         }
 
-            json += ", \"モード変更履歴 \" : {";
+            json += ", \"モード変更履歴(s) \" : {";
             for(Map.Entry<Double, State.ControlMode> entry : modeChangeTime.entrySet()) {
                 json += jsonFormat(Double.toString(entry.getKey()) + "s", entry.getValue().toString() + ", ");
             }
             json += "}";
 
-            json += ", \"電圧変化履歴 \" : {";
+            json += ", \"電圧変化履歴(s) \" : {";
             for(Map.Entry<Double, Double> entry : voltageChangeTime.entrySet()) {
-                json += jsonFormat(Double.toString(entry.getKey()) + "s", Double.toString(entry.getValue()) + ", ");
+                json += jsonFormat(Double.toString(entry.getKey()) + "s", Double.toString(entry.getValue()) + "V, ");
             }
             json += "}";
 
         json += "}";
+        modeChangeTime.clear();
+        voltageChangeTime.clear();
         return json;
     }
 
@@ -121,6 +131,8 @@ public class SendJson {
     private String strPostUrl = "https://api.sakura-tempesta.org/robot/";
 
     public String callPost(String JSON) {
+
+        System.out.println("sssssssssssssssssssssssseeeeeeeeeeeeeeeeeeeeennnnnnnnnnnnnnnnnndddddddddddd");
 
         HttpURLConnection con = null;
         StringBuffer result = new StringBuffer();

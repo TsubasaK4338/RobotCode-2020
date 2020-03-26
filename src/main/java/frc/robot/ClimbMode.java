@@ -32,8 +32,6 @@ public class ClimbMode {
     }
 
     public void changeState(State state) {
-        System.out.println(state.climbArmState);
-
         switch (state.climbArmState) {
             case doNothing:
                 setSlideMotorSpeed(0);
@@ -102,7 +100,6 @@ public class ClimbMode {
             // Arｍ機構と合うようにスピードを調整
             state.armState = State.ArmState.k_Adjust;
             state.armMotorSpeed = arm.SetFeedForward(armAngle) + Const.climbArmExtendSpeed + state.climbExtendAdjustSpeed;
-            System.out.println("armMotorSpeed" + state.armMotorSpeed);
         }
             /*
             if (!is_LockTimerStart) {
@@ -157,7 +154,6 @@ public class ClimbMode {
         }
 
         slideMotor.set(ControlMode.PercentOutput, speed);
-        System.out.println("slideMotorCurrent(Out):" + slideMotor.getStatorCurrent());
     }
 
     public void setClimbMotorSpeed(double speed) {
