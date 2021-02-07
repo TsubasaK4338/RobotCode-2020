@@ -18,7 +18,7 @@ public class Arm {
     TalonSRX Motor;            //モーター
     SensorCollection Encoder;  //角度測る半固定抵抗
 
-    ArmSensor armSensor;
+    ArmSensor armSensor; //センサー 
 
 
     //コンストラクター
